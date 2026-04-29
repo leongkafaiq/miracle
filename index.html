@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Boat and Lighthouse Investigation</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .diagram { text-align: center; margin: 20px; }
+    canvas { border: 1px solid #ccc; }
+    .controls { margin: 20px; }
+    .records { margin: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #eef; }
+    .formula { font-weight: bold; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🚤 Boat and Lighthouse Investigation</h1>
+  <p>Move the boat closer to the lighthouse by changing the angle of elevation. Record your observations!</p>
+
+  <div class="diagram">
+    <canvas id="diagramCanvas" width="600" height="350"></canvas>
+  </div>
+
+  <div class="controls">
+    <label for="angleSlider">Angle of Elevation (degrees): </label>
+    <input type="range" id="angleSlider" min="20" max="80" step="1" value="30">
+    <span id="angleValue">30°</span>
+    <button id="recordBtn">Record Observation</button>
+  </div>
+
+  <div class="records">
+    <h2>📝 Recorded Observations</h2>
+    <div class="formula">
+      Formula: tan(θ) = h / x → x = h / tan(θ)
+    </div>
+    <table id="recordTable">
+      <thead>
+        <tr>
+          <th>Trial</th>
+          <th>Angle (°)</th>
+          <th>Horizontal Distance x (m)</th>
+          <th>Height h (m)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('diagramCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('angleSlider');
+    const angleValue = document.getElementById('angleValue');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordTable = document.getElementById('recordTable').querySelector('tbody');
+
+    const h = 100; // lighthouse height in meters
+    let trialCount = 0;
+
+    function drawDiagram(angle) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Lighthouse rectangle down to sea level
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(500, 270 - h, 30, h); // tower body
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(500, 270 - h - 30, 30, 30); // beacon top
+
+      // Height line
+      ctx.beginPath();
+      ctx.moveTo(530, 270);
+      ctx.lineTo(530, 270 - h);
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+      ctx.fillText("Height (h)", 540, 270 - h/2);
+
+      // Boat position
+      const radians = angle * Math.PI / 180;
+      const x = h / Math.tan(radians);
+      const boatX = 500 - x;
+
+      // Boat (triangle hull)
+      ctx.fillStyle = 'blue';
+      ctx.beginPath();
+      ctx.moveTo(boatX, 270);
+      ctx.lineTo(boatX + 40, 270);
+      ctx.lineTo(boatX + 20, 290);
+      ctx.closePath();
+      ctx.fill();
+
+      // Right-angled triangle lines
+      // Base (horizontal distance)
+      ctx.beginPath();
+      ctx.moveTo(boatX + 20, 270);
+      ctx.lineTo(500, 270);
+      ctx.strokeStyle = 'green';
+      ctx.stroke();
+      ctx.fillStyle = 'black';
+      ctx.fillText("Horizontal Distance (x)", boatX + (x/2), 285);
+
+      // Vertical (height)
+      ctx.beginPath();
+      ctx.moveTo(500, 270);
+      ctx.lineTo(500, 270 - h);
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+
+      // Slanted line (line of sight)
+      ctx.beginPath();
+      ctx.moveTo(boatX + 20, 270);
+      ctx.lineTo(500, 270 - h);
+      ctx.strokeStyle = 'red';
+      ctx.stroke();
+
+      // Angle arc (correct placement)
+      ctx.beginPath();
+      ctx.arc(boatX + 20, 270, 40, 0, -radians, true);
+      ctx.strokeStyle = 'red';
+      ctx.stroke();
+      ctx.fillText("θ", boatX + 30, 250);
+
+      angleValue.textContent = angle + "°";
+      return {angle, x, h};
+    }
+
+    let currentData = drawDiagram(30);
+
+    slider.addEventListener('input', () => {
+      currentData = drawDiagram(parseInt(slider.value));
+    });
+
+    recordBtn.addEventListener('click', () => {
+      trialCount++;
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${trialCount}</td>
+                       <td>${currentData.angle}</td>
+                       <td>${currentData.x.toFixed(1)} m</td>
+                       <td>${currentData.h} m</td>`;
+      recordTable.appendChild(row);
+    });
+  </script>
+</body>
+</html>
