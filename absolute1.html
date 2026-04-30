@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>|x| Number Line</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    canvas { border: 1px solid #ccc; display: block; margin: 20px auto; }
+    .info { text-align: center; margin-top: 15px; font-size: 20px; font-weight: bold; }
+    table { width: 60%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #eef; }
+  </style>
+</head>
+<body>
+  <h1>|x| Investigation</h1>
+  <p>Drag the blue point along the number line. The distance to 0 is shown, and you can record observations.</p>
+
+  <canvas id="canvas" width="700" height="250"></canvas>
+  <div class="info">
+    <p id="formula">|x| = ?</p>
+    <button id="recordBtn">Record Observation</button>
+  </div>
+
+  <table id="recordTable">
+    <thead>
+      <tr>
+        <th>Trial</th>
+        <th>x Value</th>
+        <th>|x| (Distance to 0)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const recordBtn = document.getElementById("recordBtn");
+    const recordTable = document.getElementById("recordTable").querySelector("tbody");
+
+    let xPos = 350; // initial position of draggable point
+    let dragging = false;
+    let trialCount = 0;
+
+    function canvasToValue(px) {
+      return ((px - 350) / 50).toFixed(2);
+    }
+
+    function valueToCanvas(val) {
+      return 350 + val * 50;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "16px Arial";
+
+      // Number line
+      ctx.beginPath();
+      ctx.moveTo(50, 150);
+      ctx.lineTo(650, 150);
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+
+      // Positive x-axis arrow
+      ctx.beginPath();
+      ctx.moveTo(650, 150);
+      ctx.lineTo(640, 145);
+      ctx.lineTo(640, 155);
+      ctx.closePath();
+      ctx.fillStyle = "black";
+      ctx.fill();
+      ctx.fillText("+x", 660, 145);
+
+      // Ticks
+      for (let i = -6; i <= 6; i++) {
+        const px = valueToCanvas(i);
+        ctx.beginPath();
+        ctx.moveTo(px, 145);
+        ctx.lineTo(px, 155);
+        ctx.stroke();
+        ctx.fillText(i, px - 5, 175);
+      }
+
+      // Mark 0
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(valueToCanvas(0), 150, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillText("0", valueToCanvas(0) - 5, 130);
+
+      // Draggable point x
+      ctx.fillStyle = "blue";
+      ctx.beginPath();
+      ctx.arc(xPos, 150, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.font = "18px Arial bold";
+      ctx.fillText("x", xPos - 5, 130);
+
+      // Distance to 0
+      const xVal = parseFloat(canvasToValue(xPos));
+      const dist = Math.abs(xVal);
+
+      // Arrow to 0
+      ctx.strokeStyle = "green";
+      ctx.beginPath();
+      ctx.moveTo(xPos, 150);
+      ctx.lineTo(valueToCanvas(0), 150);
+      ctx.stroke();
+      ctx.fillStyle = "green";
+      ctx.fillText("|x| = " + dist.toFixed(2), (xPos + valueToCanvas(0)) / 2 - 20, 100);
+
+      // Update formula
+      document.getElementById("formula").textContent = `|x| = ${dist.toFixed(2)}`;
+
+      return {xVal, dist};
+    }
+
+    let currentData = draw();
+
+    canvas.addEventListener("mousedown", e => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      if (Math.abs(mouseX - xPos) < 10 && Math.abs(mouseY - 150) < 10) {
+        dragging = true;
+      }
+    });
+
+    canvas.addEventListener("mousemove", e => {
+      if (dragging) {
+        const rect = canvas.getBoundingClientRect();
+        xPos = e.clientX - rect.left;
+        if (xPos < 50) xPos = 50;
+        if (xPos > 650) xPos = 650;
+        currentData = draw();
+      }
+    });
+
+    canvas.addEventListener("mouseup", () => dragging = false);
+    canvas.addEventListener("mouseleave", () => dragging = false);
+
+    recordBtn.addEventListener("click", () => {
+      trialCount++;
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${trialCount}</td>
+                       <td>${currentData.xVal}</td>
+                       <td>${currentData.dist.toFixed(2)}</td>`;
+      recordTable.appendChild(row);
+    });
+  </script>
+</body>
+</html>
