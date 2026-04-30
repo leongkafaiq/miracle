@@ -136,6 +136,7 @@
 
     let currentData = draw();
 
+    // Mouse events
     canvas.addEventListener("mousedown", e => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -158,6 +159,29 @@
     canvas.addEventListener("mouseup", () => dragging = false);
     canvas.addEventListener("mouseleave", () => dragging = false);
 
+    // Touch events for mobile
+    canvas.addEventListener("touchstart", e => {
+      const rect = canvas.getBoundingClientRect();
+      const touchX = e.touches[0].clientX - rect.left;
+      const touchY = e.touches[0].clientY - rect.top;
+      if (Math.abs(touchX - xPos) < 10 && Math.abs(touchY - 150) < 10) {
+        dragging = true;
+      }
+    });
+
+    canvas.addEventListener("touchmove", e => {
+      if (dragging) {
+        const rect = canvas.getBoundingClientRect();
+        xPos = e.touches[0].clientX - rect.left;
+        if (xPos < 50) xPos = 50;
+        if (xPos > 650) xPos = 650;
+        currentData = draw();
+      }
+    });
+
+    canvas.addEventListener("touchend", () => dragging = false);
+
+    // Record button
     recordBtn.addEventListener("click", () => {
       trialCount++;
       const row = document.createElement("tr");
