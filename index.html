@@ -6,7 +6,7 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .diagram { text-align: center; margin: 20px; }
-    canvas { border: 1px solid #ccc; }
+    canvas { border: 1px solid #ccc; display: block; margin: auto; }
     .controls { margin: 20px; }
     .records { margin: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -20,7 +20,7 @@
   <p>Move the boat closer to the lighthouse by changing the angle of elevation. Record your observations!</p>
 
   <div class="diagram">
-    <canvas id="diagramCanvas" width="600" height="350"></canvas>
+    <canvas id="diagramCanvas" width="700" height="400"></canvas>
   </div>
 
   <div class="controls">
@@ -56,70 +56,97 @@
     const recordBtn = document.getElementById('recordBtn');
     const recordTable = document.getElementById('recordTable').querySelector('tbody');
 
-    const h = 100; // lighthouse height in meters
+    const h = 150; // taller lighthouse
     let trialCount = 0;
 
     function drawDiagram(angle) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Lighthouse rectangle down to sea level
-      ctx.fillStyle = 'gray';
-      ctx.fillRect(500, 270 - h, 30, h); // tower body
-      ctx.fillStyle = 'yellow';
-      ctx.fillRect(500, 270 - h - 30, 30, 30); // beacon top
+      // Background: sky above, sea below
+      ctx.fillStyle = "#87CEEB"; // sky
+      ctx.fillRect(0, 0, canvas.width, 350);
+      ctx.fillStyle = "#1E90FF"; // sea
+      ctx.fillRect(0, 350, canvas.width, 50);
 
-      // Height line
+      ctx.font = "20px Arial bold";
+
+      // Lighthouse
+      ctx.fillStyle = 'white';
+      ctx.fillRect(550, 350 - h, 40, h);
+      ctx.fillStyle = 'red';
       ctx.beginPath();
-      ctx.moveTo(530, 270);
-      ctx.lineTo(530, 270 - h);
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
-      ctx.fillText("Height (h)", 540, 270 - h/2);
+      ctx.arc(570, 350 - h, 20, 0, Math.PI, true);
+      ctx.fill();
+
+      // Windows
+      ctx.fillStyle = 'black';
+      ctx.fillRect(560, 350 - h + 30, 20, 10);
+      ctx.fillRect(560, 350 - h + 70, 20, 10);
 
       // Boat position
       const radians = angle * Math.PI / 180;
-      const x = h / Math.tan(radians);
-      const boatX = 500 - x;
+      let x = h / Math.tan(radians);
+      let boatX = 550 - x;
+      if (boatX + 40 > 530) boatX = 490; // stop before lighthouse
 
-      // Boat (triangle hull)
-      ctx.fillStyle = 'blue';
+      // Boat hull
+      ctx.fillStyle = 'brown';
       ctx.beginPath();
-      ctx.moveTo(boatX, 270);
-      ctx.lineTo(boatX + 40, 270);
-      ctx.lineTo(boatX + 20, 290);
+      ctx.moveTo(boatX, 350);
+      ctx.lineTo(boatX + 40, 350);
+      ctx.lineTo(boatX + 30, 370);
+      ctx.lineTo(boatX + 10, 370);
       ctx.closePath();
       ctx.fill();
 
-      // Right-angled triangle lines
-      // Base (horizontal distance)
+      // Mast + sail
+      ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.moveTo(boatX + 20, 270);
-      ctx.lineTo(500, 270);
+      ctx.moveTo(boatX + 20, 350);
+      ctx.lineTo(boatX + 20, 310);
+      ctx.stroke();
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.moveTo(boatX + 20, 310);
+      ctx.lineTo(boatX + 40, 330);
+      ctx.lineTo(boatX + 20, 350);
+      ctx.closePath();
+      ctx.fill();
+
+      // Triangle lines
       ctx.strokeStyle = 'green';
+      ctx.beginPath();
+      ctx.moveTo(boatX + 20, 350);
+      ctx.lineTo(550, 350);
       ctx.stroke();
       ctx.fillStyle = 'black';
-      ctx.fillText("Horizontal Distance (x)", boatX + (x/2), 285);
+      ctx.fillText("Horizontal Distance (x)", boatX + (x/2), 380);
 
-      // Vertical (height)
-      ctx.beginPath();
-      ctx.moveTo(500, 270);
-      ctx.lineTo(500, 270 - h);
       ctx.strokeStyle = 'black';
+      ctx.beginPath();
+      ctx.moveTo(550, 350);
+      ctx.lineTo(550, 350 - h);
+      ctx.stroke();
+      ctx.fillText("Height (h)", 600, 350 - h/2);
+
+      ctx.strokeStyle = 'red';
+      ctx.beginPath();
+      ctx.moveTo(boatX + 20, 350);
+      ctx.lineTo(550, 350 - h);
       ctx.stroke();
 
-      // Slanted line (line of sight)
+      // Angle arc
       ctx.beginPath();
-      ctx.moveTo(boatX + 20, 270);
-      ctx.lineTo(500, 270 - h);
+      ctx.arc(boatX + 20, 350, 40, 0, -radians, true);
       ctx.strokeStyle = 'red';
       ctx.stroke();
 
-      // Angle arc (correct placement)
-      ctx.beginPath();
-      ctx.arc(boatX + 20, 270, 40, 0, -radians, true);
-      ctx.strokeStyle = 'red';
-      ctx.stroke();
-      ctx.fillText("θ", boatX + 30, 250);
+      // θ label: always to the right of arc
+      const arcRadius = 40;
+      const arcX = boatX + 20 + arcRadius * Math.cos(-radians/2);
+      const arcY = 350 + arcRadius * Math.sin(-radians/2);
+      ctx.fillStyle = 'red';
+      ctx.fillText("θ", arcX + 15, arcY); // push right by +15px
 
       angleValue.textContent = angle + "°";
       return {angle, x, h};
