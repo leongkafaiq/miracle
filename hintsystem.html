@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Exercise 8.3 — Student Hint Hub</title>
+
+<!-- Modern attractive styling -->
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --muted:#9aa4b2;
+    --accent:#6ee7b7;
+    --accent-2:#60a5fa;
+    --glass: rgba(255,255,255,0.04);
+    --glass-2: rgba(255,255,255,0.02);
+    --success:#10b981;
+    --danger:#fb7185;
+    --radius:12px;
+    --shadow: 0 6px 18px rgba(2,6,23,0.6);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(96,165,250,0.06), transparent 8%),
+    radial-gradient(1000px 500px at 90% 90%, rgba(110,231,183,0.04), transparent 8%),
+    var(--bg); color:#e6eef8; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+  header{padding:28px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px);}
+  .container{max-width:1100px;margin:18px auto;padding:0 18px;}
+  .title-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:20px;letter-spacing:-0.2px}
+  .subtitle{color:var(--muted);font-size:13px}
+  .top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .pill{background:linear-gradient(90deg,var(--accent-2),var(--accent));padding:8px 12px;border-radius:999px;color:#04263b;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(96,165,250,0.08)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:18px}
+  .card{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));border-radius:var(--radius);padding:14px;border:1px solid var(--glass);box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.7)}
+  .qhead{display:flex;align-items:flex-start;gap:12px}
+  .qmeta{flex:1}
+  .qtitle{font-weight:700;margin-bottom:6px}
+  .qprompt{color:var(--muted);font-size:13px}
+  .badge{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;font-weight:700;color:var(--accent);font-size:13px;border:1px solid rgba(110,231,183,0.08)}
+  .hint-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .hint-btn{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);color:var(--accent-2);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;transition:transform .12s ease,opacity .12s}
+  .hint-btn:hover{transform:translateY(-3px)}
+  .hint-btn[disabled]{opacity:.36;cursor:not-allowed;transform:none}
+  .hint-panel{margin-top:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03);color:#dff7ee;line-height:1.5;display:none}
+  .hint-level{font-weight:800;color:#cfeee0;margin-bottom:8px}
+  .hint-text{color:#d7f6e9}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  input[type="text"]{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;color:#e6eef8;min-width:220px}
+  .btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04263b;border:none;font-weight:700}
+  .student-summary{margin-top:12px;color:var(--muted);font-size:13px}
+  .encourage{margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(90deg, rgba(16,185,129,0.06), rgba(96,165,250,0.03));border:1px solid rgba(255,255,255,0.02);color:#bff0d9}
+  .footer{margin:28px 0;color:var(--muted);font-size:13px;text-align:center}
+  .progress{height:8px;background:var(--glass-2);border-radius:999px;overflow:hidden;margin-top:10px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%;transition:width .5s ease}
+  .small{font-size:12px;color:var(--muted)}
+  /* subtle reveal animation */
+  .reveal{animation:fadeIn .28s ease both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* responsive */
+  @media (max-width:520px){
+    .title-row{flex-direction:column;align-items:flex-start}
+    .top-actions{margin-left:0}
+  }
+</style>
+
+<!-- MathJax for LaTeX rendering -->
+<script>
+window.MathJax = {
+  tex: {inlineMath: [['\\(','\\)'], ['$', '$']], displayMath: [['\
+
+\[','\\]
+
+']]},
+  svg: {fontCache: 'global'}
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="title-row">
+      <div>
+        <h1>Exercise 8.3 — Student Hint Hub</h1>
+        <div class="subtitle">Questions: <strong>6, 8, 14, 15, 16, 18</strong> — three sequential hints per question</div>
+      </div>
+
+      <div class="top-actions">
+        <div class="pill">Self‑study mode</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Student note (friendly, student-facing) -->
+  <section class="card">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:800">Student note</div>
+        <div class="small" style="margin-top:6px;color:var(--muted)">
+          Reveal hints in order: <strong>Hint 1 → Hint 2 → Hint 3</strong>.  
+          <strong>Hint 1</strong> gives a focused nudge to help you spot the right triangle or relation.  
+          <strong>Hint 2</strong> sets up the equation using LaTeX so you can see the exact trig relation.  
+          <strong>Hint 3</strong> outlines the algebraic steps (still no final numeric answer) so you can finish the calculation yourself.
+        </div>
+      </div>
+
+      <div style="min-width:260px">
+        <label for="studentId" class="small" style="display:block;color:var(--muted);margin-bottom:6px">Enter your name or ID (saves locally)</label>
+        <div style="display:flex;gap:8px">
+          <input id="studentId" type="text" placeholder="e.g., Lee_K" aria-label="Student name or ID" />
+          <button id="loadBtn" class="btn">Load</button>
+          <button id="clearBtn" class="btn">Clear</button>
+        </div>
+        <div id="studentSummary" class="student-summary">No student loaded.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Encouragement -->
+  <div class="encourage">
+    Try to solve the question first — use hints only when you need them. Teachers can check how many hint clicks each student used on their iPad.
+  </div>
+
+  <!-- Questions -->
+  <div class="card-grid" id="questionsGrid"></div>
+
+  <div class="footer">Built for classroom self-study • Data stored locally in your browser only</div>
+</main>
+
+<!-- Script: sequential hint logic, MathJax rendering, localStorage tracking -->
+<script>
+/* Sequential hint hub
+   - Questions: 6,8,14,15,16,18
+   - localStorage key: ex8_3_hint_records
+   - Structure: { studentId: { qid: { clicks: n, levelsUsed: [1,2], timestamps: [...] } } }
+   - Students must reveal hints in order. Each click increments clicks for that question.
+*/
+
+const QUESTIONS = [
+  { id:6, title:"Q6 — Bird and cat", prompt:"Bird eye level 2.5 m; angle of depression 40°. Find horizontal distance AC.",
+    hints:[
+      "Hint 1 — Nudge: Draw a horizontal through the bird's eye and a vertical down to the ground. The horizontal distance you want is the base of the right triangle whose vertical side is the bird's eye height.",
+      "Hint 2 — Setup (LaTeX): Let the horizontal distance be \\(x\\). Then \\(\\tan(40^\\circ)=\\dfrac{2.5}{x}\\).",
+      "Hint 3 — Steps (LaTeX): Rearrange to \\(x=\\dfrac{2.5}{\\tan(40^\\circ)}\\). Evaluate with a calculator and round as needed."
+    ]
+  },
+  { id:8, title:"Q8 — Ada and wall", prompt:"Ada eye level 1.6 m; 4 m from wall; angle of elevation 35°. Find wall height.",
+    hints:[
+      "Hint 1 — Nudge: Identify the vertical difference between the wall top and Ada's eye — that is the opposite side of a right triangle with base 4 m.",
+      "Hint 2 — Setup (LaTeX): Let wall height be \\(h\\). Then \\(\\tan(35^\\circ)=\\dfrac{h-1.6}{4}\\).",
+      "Hint 3 — Steps (LaTeX): Solve \\(h=1.6+4\\tan(35^\\circ)\\). Compute and round."
+    ]
+  },
+  { id:14, title:"Q14 — Two buildings MN & PQ", prompt:"MN=20 m, PQ=70 m, angle of elevation 25°. Find angle of depression of N from P.",
+    hints:[
+      "Hint 1 — Nudge: Vertical difference is \\(70-20\\). That and the horizontal separation form a right triangle used with tangent.",
+      "Hint 2 — Setup (LaTeX): Let horizontal distance be \\(d\\). Then \\(\\tan(25^\\circ)=\\dfrac{50}{d}\\).",
+      "Hint 3 — Steps (LaTeX): Solve \\(d=\\dfrac{50}{\\tan(25^\\circ)}\\). The angle of depression equals the angle of elevation, so it is \\(25^\\circ\\)."
+    ]
+  },
+  { id:15, title:"Q15 — Lighthouse depressions", prompt:"Lighthouse height 25 m; depressions 26° and 38°. Find distance AB.",
+    hints:[
+      "Hint 1 — Nudge: Each depression gives a right triangle: vertical = 25 m, horizontal = distance from base to sea point.",
+      "Hint 2 — Setup (LaTeX): If distances are \\(x_A, x_B\\), then \\(x_A=\\dfrac{25}{\\tan(26^\\circ)}\\), \\(x_B=\\dfrac{25}{\\tan(38^\\circ)}\\).",
+      "Hint 3 — Steps (LaTeX): Compute \\(|x_A-x_B|\\) to get \\(AB\\). Evaluate and round."
+    ]
+  },
+  { id:16, title:"Q16 — Tree from two points", prompt:"Angles 33° and 46° from A and B; A and B are 15 m apart. Find tree height.",
+    hints:[
+      "Hint 1 — Nudge: Let distance from A to tree base be \\(x\\). Then distance from B to base is \\(x\\pm15\\) depending on which is closer — check diagram.",
+      "Hint 2 — Setup (LaTeX): With height \\(h\\): \\(\\tan(33^\\circ)=\\dfrac{h}{x}\\), \\(\\tan(46^\\circ)=\\dfrac{h}{x\\pm15}\\).",
+      "Hint 3 — Steps (LaTeX): Equate: \\(x\\tan(33^\\circ)=(x\\pm15)\\tan(46^\\circ)\\). Solve for \\(x\\), then \\(h=x\\tan(33^\\circ)\\)."
+    ]
+  },
+  { id:18, title:"Q18 — Two equal-height buildings", prompt:"Two buildings same height, 50 m apart; angles 54° and 38° from A. Find height.",
+    hints:[
+      "Hint 1 — Nudge: Let distance from A to nearer base be \\(x\\); the other base is \\(50-x\\). Each angle gives a tangent relation with the same height.",
+      "Hint 2 — Setup (LaTeX): \\(h = x\\tan(54^\\circ)\\) and \\(h = (50-x)\\tan(38^\\circ)\\).",
+      "Hint 3 — Steps (LaTeX): Equate: \\(x\\tan(54^\\circ)=(50-x)\\tan(38^\\circ)\\). Solve for \\(x\\), then \\(h=x\\tan(54^\\circ)\\)."
+    ]
+  }
+];
+
+const STORAGE_KEY = 'ex8_3_hint_records';
+
+// storage helpers
+function loadAll(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(e){ return {}; } }
+function saveAll(obj){ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }
+function getRec(id){ const all=loadAll(); return all[id]||{}; }
+function setRec(id,rec){ const all=loadAll(); all[id]=rec; saveAll(all); }
+
+// build UI
+const grid = document.getElementById('questionsGrid');
+const studentIdInput = document.getElementById('studentId');
+const loadBtn = document.getElementById('loadBtn');
+const clearBtn = document.getElementById('clearBtn');
+const studentSummary = document.getElementById('studentSummary');
+
+function makeCard(q){
+  const el = document.createElement('section');
+  el.className = 'card reveal';
+  el.id = 'q'+q.id;
+  el.innerHTML = `
+    <div class="qhead">
+      <div class="qmeta">
+        <div class="qtitle">Question ${q.id} — ${q.title}</div>
+        <div class="qprompt">${q.prompt}</div>
+        <div class="progress" aria-hidden="true"><i id="prog-${q.id}"></i></div>
+      </div>
+      <div style="text-align:right">
+        <div class="badge" id="badge-${q.id}">0</div>
+        <div class="small" style="margin-top:6px;color:var(--muted)">clicks</div>
+      </div>
+    </div>
+    <div class="hint-row" id="hintRow-${q.id}">
+      <button class="hint-btn" data-q="${q.id}" data-level="1">Hint 1</button>
+      <button class="hint-btn" data-q="${q.id}" data-level="2" disabled>Hint 2</button>
+      <button class="hint-btn" data-q="${q.id}" data-level="3" disabled>Hint 3</button>
+    </div>
+    <div class="hint-panel" id="hintText-${q.id}" aria-live="polite"></div>
+  `;
+  return el;
+}
+
+function render(){
+  grid.innerHTML = '';
+  QUESTIONS.forEach(q => grid.appendChild(makeCard(q)));
+  attachListeners();
+  refreshAll();
+}
+
+function attachListeners(){
+  document.querySelectorAll('.hint-btn').forEach(btn=>{
+    btn.addEventListener('click', onHintClick);
+  });
+  loadBtn.addEventListener('click', ()=>{
+    const id = (studentIdInput.value||'').trim();
+    if(!id){ alert('Please enter your name or ID to load your record.'); studentIdInput.focus(); return; }
+    refreshAll();
+  });
+  clearBtn.addEventListener('click', ()=>{
+    const id = (studentIdInput.value||'').trim();
+    if(!id){ alert('Enter name/ID to clear.'); return; }
+    const all = loadAll();
+    if(all[id]){ delete all[id]; saveAll(all); }
+    refreshAll();
+    alert('Your local record was cleared.');
+  });
+}
+
+function onHintClick(e){
+  const btn = e.currentTarget;
+  const qid = Number(btn.dataset.q);
+  const level = Number(btn.dataset.level);
+  const student = (studentIdInput.value||'').trim();
+  if(!student){ alert('Enter your name or ID first. Your clicks will be saved under that name.'); studentIdInput.focus(); return; }
+  const rec = getRec(student);
+  const qrec = rec[qid] || { clicks:0, levelsUsed:[], timestamps:[] };
+  if(!isAllowed(qrec, level)){ alert('Please reveal hints in order: Hint 1 → Hint 2 → Hint 3.'); return; }
+  // reveal
+  const panel = document.getElementById('hintText-'+qid);
+  panel.style.display = 'block';
+  panel.innerHTML = `<div class="hint-level">Level ${level}</div><div class="hint-text">${QUESTIONS.find(x=>x.id===qid).hints[level-1]}</div>`;
+  if(window.MathJax && window.MathJax.typesetPromise){ MathJax.typesetPromise([panel]).catch(()=>{}); }
+  // record
+  qrec.clicks = (qrec.clicks||0) + 1;
+  if(!qrec.levelsUsed.includes(level)) qrec.levelsUsed.push(level);
+  qrec.timestamps.push({level, t: new Date().toISOString()});
+  rec[qid] = qrec;
+  setRec(student, rec);
+  refreshAll();
+}
+
+function isAllowed(qrec, level){
+  if(level===1) return true;
+  if(level===2) return (qrec.levelsUsed||[]).includes(1);
+  if(level===3) return (qrec.levelsUsed||[]).includes(2);
+  return false;
+}
+
+function refreshAll(){
+  const student = (studentIdInput.value||'').trim();
+  // update badges and buttons
+  QUESTIONS.forEach(q=>{
+    const badge = document.getElementById('badge-'+q.id);
+    const prog = document.getElementById('prog-'+q.id);
+    const btn1 = document.querySelector(`#q${q.id} .hint-btn[data-level="1"]`);
+    const btn2 = document.querySelector(`#q${q.id} .hint-btn[data-level="2"]`);
+    const btn3 = document.querySelector(`#q${q.id} .hint-btn[data-level="3"]`);
+    let clicks = 0, levels = [];
+    if(student){
+      const rec = getRec(student);
+      if(rec[q.id]){ clicks = rec[q.id].clicks || 0; levels = rec[q.id].levelsUsed || []; }
+    }
+    badge.textContent = clicks;
+    // progress: 0%,33%,66%,100% depending on levels used
+    const pct = (levels.includes(1)?33:0) + (levels.includes(2)?33:0) + (levels.includes(3)?34:0);
+    prog.style.width = pct + '%';
+    // buttons enabled/disabled
+    if(!student){
+      btn1.disabled = false; btn2.disabled = true; btn3.disabled = true;
+    } else {
+      btn1.disabled = false;
+      btn2.disabled = !levels.includes(1);
+      btn3.disabled = !levels.includes(2);
+    }
+    // if panel already has content, keep it visible
+    const panel = document.getElementById('hintText-'+q.id);
+    if(panel && panel.innerHTML.trim() !== '') panel.style.display = 'block';
+  });
+
+  // update student summary (compact counts per question)
+  if(!student){ studentSummary.textContent = 'No student loaded.'; return; }
+  const rec = getRec(student);
+  const parts = QUESTIONS.map(q => `Q${q.id}: ${ (rec[q.id] && rec[q.id].clicks) ? rec[q.id].clicks : 0 }`).join(' · ');
+  studentSummary.innerHTML = `<strong>${escapeHtml(student)}</strong> — hint clicks per question: <span class="small" style="color:var(--muted)">${parts}</span>`;
+}
+
+// small helper
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+// initial render
+render();
+
+// convenience: prefill if only one record exists
+(function prefill(){
+  const all = loadAll();
+  const keys = Object.keys(all);
+  if(keys.length===1){ studentIdInput.value = keys[0]; refreshAll(); }
+})();
+</script>
+</body>
+</html>
